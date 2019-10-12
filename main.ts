@@ -31,14 +31,23 @@ const outputHtmlFile = (outputDir = OUTPUT_DIR, prefix, html) => {
     });
 };
 
-//gfmオプションを定義
-program.option("--gfm", "GFMを有効にする")
-program.option("--chrome", "生成したHTMLをchromeで自動プレビュー")
+//使用可能なオプションとその説明のリスト オプションを追加したかったらここに書く
+const availableOptions = {
+    gfm: "GFMを有効にする",
+    chrome: "生成したHTMLを自動プレビュー",
+};
+
+//有効なオプションを設定
+for (const [key, value] of Object.entries(availableOptions)) {
+    program.option(`--${key}`, value);
+}
+
 //引数を受け取りパース　.
 program.parse(process.argv);
 //目標ファイルパス取得 ./から始まっていれば消しておく
 const filePath: string = getFilePath(program.args[0]);
 const hasChromeOption: boolean = program.opts().chrome;
+console.log(program.opts());
 //オブジェクトのマージ構文(spread)　かぶったら上書きされる
 const clipOptions = {
     gfm: false,
@@ -59,7 +68,3 @@ fs.readFile(filePath, { encoding: "utf8" }, (err: Error, file: string) => {
     //chromeオプションがあればブラウザで自動で開かせる
     previwInChrome(hasChromeOption, OUTPUT_DIR, outputedFileNamePrefix);
 });
-
-
-//todo 出力に成功したらブラウザで自動的に開くオプションをつける
- // - /usr/bin/google-chrome path コマンドで開く

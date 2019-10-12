@@ -43,14 +43,24 @@ var outputHtmlFile = function (outputDir, prefix, html) {
         console.log("SAVED SUCCESSFULLY!");
     });
 };
+var argsOptionsExplanation = {
+    gfm: "GFMを有効にする",
+    chrome: "生成したHTMLを自動プレビュー",
+    test: "test"
+};
+for (var _i = 0, _a = Object.entries(argsOptionsExplanation); _i < _a.length; _i++) {
+    var _b = _a[_i], key = _b[0], value = _b[1];
+    program.option("--" + key, value);
+}
 //gfmオプションを定義
-program.option("--gfm", "GFMを有効にする");
-program.option("--chrome", "生成したHTMLをchromeで自動プレビュー");
+// program.option("--gfm", "GFMを有効にする")
+// program.option("--chrome", "生成したHTMLをchromeで自動プレビュー")
 //引数を受け取りパース　.
 program.parse(process.argv);
 //目標ファイルパス取得 ./から始まっていれば消しておく
 var filePath = getFilePath(program.args[0]);
 var hasChromeOption = program.opts().chrome;
+console.log(program.opts());
 //オブジェクトのマージ構文(spread)　かぶったら上書きされる
 var clipOptions = __assign({ gfm: false }, program.opts());
 fs.readFile(filePath, { encoding: "utf8" }, function (err, file) {
@@ -66,5 +76,3 @@ fs.readFile(filePath, { encoding: "utf8" }, function (err, file) {
     //chromeオプションがあればブラウザで自動で開かせる
     previwInChrome(hasChromeOption, OUTPUT_DIR, outputedFileNamePrefix);
 });
-//todo 出力に成功したらブラウザで自動的に開くオプションをつける
-// - /usr/bin/google-chrome path コマンドで開く
