@@ -23,6 +23,15 @@ var getFilePath = function (argPath) {
     }
     return argPath;
 };
+var checkValidOptions = function () {
+    var options = process.argv;
+    return options.every(function (value) {
+        //最初の--を消す
+        value = value.slice(2);
+        //有効なオプションになかったらfalse
+        availableOptions.hasOwnProperty(value);
+    });
+};
 var previwInChrome = function (hasChromeOption, outputDir, prefix) {
     if (outputDir === void 0) { outputDir = OUTPUT_DIR; }
     if (hasChromeOption) {
@@ -43,24 +52,27 @@ var outputHtmlFile = function (outputDir, prefix, html) {
         console.log("SAVED SUCCESSFULLY!");
     });
 };
-var argsOptionsExplanation = {
+//使用可能なオプションとその説明のリスト オプションを追加したかったらここに書く
+var availableOptions = {
     gfm: "GFMを有効にする",
-    chrome: "生成したHTMLを自動プレビュー",
-    test: "test"
+    chrome: "生成したHTMLを自動プレビュー"
 };
-for (var _i = 0, _a = Object.entries(argsOptionsExplanation); _i < _a.length; _i++) {
+//有効なオプションを設定
+for (var _i = 0, _a = Object.entries(availableOptions); _i < _a.length; _i++) {
     var _b = _a[_i], key = _b[0], value = _b[1];
     program.option("--" + key, value);
 }
-//gfmオプションを定義
-// program.option("--gfm", "GFMを有効にする")
-// program.option("--chrome", "生成したHTMLをchromeで自動プレビュー")
 //引数を受け取りパース　.
 program.parse(process.argv);
+//無効なオプションなら終了
+var isValidOptions = checkValidOptions();
 //目標ファイルパス取得 ./から始まっていれば消しておく
 var filePath = getFilePath(program.args[0]);
 var hasChromeOption = program.opts().chrome;
-console.log(program.opts());
+if (!hasChromeOption) {
+    console.error("無効なオプションが含まれています。");
+    process.exit(1);
+}
 //オブジェクトのマージ構文(spread)　かぶったら上書きされる
 var clipOptions = __assign({ gfm: false }, program.opts());
 fs.readFile(filePath, { encoding: "utf8" }, function (err, file) {

@@ -13,6 +13,16 @@ const getFilePath = (argPath: string): string => {
     return argPath;
 };
 
+const checkValidOptions = () => {
+    const options = process.argv;
+    return options.every((value) => {
+        //最初の--を消す
+        value = value.slice(2);
+        //有効なオプションになかったらfalse
+        availableOptions.hasOwnProperty(value);
+    });
+};
+
 const previwInChrome = (hasChromeOption: boolean, outputDir: string = OUTPUT_DIR, prefix: string): void => {
     if (hasChromeOption) {
         const chromeCommand = `/usr/bin/google-chrome ${outputDir}${prefix}.html`;
@@ -44,10 +54,16 @@ for (const [key, value] of Object.entries(availableOptions)) {
 
 //引数を受け取りパース　.
 program.parse(process.argv);
+//無効なオプションなら終了
+const isValidOptions = checkValidOptions();
 //目標ファイルパス取得 ./から始まっていれば消しておく
 const filePath: string = getFilePath(program.args[0]);
 const hasChromeOption: boolean = program.opts().chrome;
-console.log(program.opts());
+
+if (!hasChromeOption) {
+    console.error("無効なオプションが含まれています。");
+    process.exit(1);
+}
 //オブジェクトのマージ構文(spread)　かぶったら上書きされる
 const clipOptions = {
     gfm: false,
