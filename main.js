@@ -14,6 +14,7 @@ exports.__esModule = true;
 var program = require("commander");
 var fs = require("fs");
 var md2html_1 = require("./md2html");
+var child_process_1 = require("child_process");
 var OUTPUT_DIR = __dirname + "/output/";
 var getFilePath = function (argPath) {
     // ./ で始まっていれば含まないパスを返す
@@ -22,12 +23,21 @@ var getFilePath = function (argPath) {
     }
     return argPath;
 };
-var outputHtmlFile = function (outputDir, filePath, html) {
+var previwInChrome = function (hasChromeOption, outputDir, prefix) {
     if (outputDir === void 0) { outputDir = OUTPUT_DIR; }
-    //コンマ以前の名前のみを取得
-    var positionOfFirstFileExtensionComma = filePath.indexOf('.');
-    var outputedFileNamePrefix = filePath.slice(0, positionOfFirstFileExtensionComma);
-    fs.writeFile(outputDir + outputedFileNamePrefix + ".html", html, function (err) {
+    if (hasChromeOption) {
+        var chromeCommand = "/usr/bin/google-chrome " + outputDir + prefix + ".html";
+        child_process_1.exec(chromeCommand, function (err, stdout, stderr) {
+            if (err)
+                throw new Error;
+            return;
+        });
+    }
+    return;
+};
+var outputHtmlFile = function (outputDir, prefix, html) {
+    if (outputDir === void 0) { outputDir = OUTPUT_DIR; }
+    fs.writeFile(outputDir + prefix + ".html", html, function (err) {
         if (err)
             throw err;
         console.log("SAVED SUCCESSFULLY!");
@@ -35,10 +45,12 @@ var outputHtmlFile = function (outputDir, filePath, html) {
 };
 //gfmオプションを定義
 program.option("--gfm", "GFMを有効にする");
+program.option("--chrome", "生成したHTMLをchromeで自動プレビュー");
 //引数を受け取りパース　.
 program.parse(process.argv);
 //目標ファイルパス取得 ./から始まっていれば消しておく
 var filePath = getFilePath(program.args[0]);
+var hasChromeOption = program.opts().chrome;
 //オブジェクトのマージ構文(spread)　かぶったら上書きされる
 var clipOptions = __assign({ gfm: false }, program.opts());
 fs.readFile(filePath, { encoding: "utf8" }, function (err, file) {
@@ -48,6 +60,11 @@ fs.readFile(filePath, { encoding: "utf8" }, function (err, file) {
         return;
     }
     var html = md2html_1.md2html(file, clipOptions);
-    outputHtmlFile(OUTPUT_DIR, filePath, html);
+    var positionOfFirstFileExtensionComma = filePath.indexOf('.');
+    var outputedFileNamePrefix = filePath.slice(0, positionOfFirstFileExtensionComma);
+    outputHtmlFile(OUTPUT_DIR, outputedFileNamePrefix, html);
+    //chromeオプションがあればブラウザで自動で開かせる
+    previwInChrome(hasChromeOption, OUTPUT_DIR, outputedFileNamePrefix);
 });
 //todo 出力に成功したらブラウザで自動的に開くオプションをつける
+// - /usr/bin/google-chrome path コマンドで開く
