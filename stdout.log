@@ -1,0 +1,11 @@
+
+> markdown_app@1.0.0 test /home/suhrkawase/work/javascript/markdown_app
+> mocha test/
+
+
+
+  ✓ converts Markdown to HTML(GFM=false)
+  ✓ converts MarkDown to HTML (GFM=true)
+
+  2 passing (27ms)
+
